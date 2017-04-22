@@ -3,14 +3,14 @@ import java.time.{Instant, LocalDateTime, ZoneId}
 
 import org.apache.spark.{SparkConf, SparkContext}
 
-object ScalaExample {
+object Aggregator {
 
   def main(args: Array[String]) {
-    val sparkConf = new SparkConf().setAppName(ScalaExample.getClass.getSimpleName)
+    val sparkConf = new SparkConf().setAppName(Aggregator.getClass.getSimpleName)
     val sc = new SparkContext(sparkConf)
 
     val textFile = sc.textFile(args(0))
-    val counts = textFile.map(line => line.split(","))
+    val result = textFile.map(line => line.split(","))
       .map {
         case Array(timestamp, price, volume) =>
           (formatTimestamp(timestamp.toLong), ((price.toDouble, price.toDouble), volume.toDouble))
@@ -19,7 +19,7 @@ object ScalaExample {
         case (((minPrice1, maxPrice1), volume1), ((minPrice2, maxPrice2), volume2)) =>
           ((Math.min(minPrice1, minPrice2), Math.max(maxPrice1, maxPrice2)), volume1 + volume2)
       }
-    counts.saveAsTextFile(args(1))
+    result.saveAsTextFile(args(1))
   }
 
   private def formatTimestamp(timestamp: Long): String = {
