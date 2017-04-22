@@ -1,3 +1,6 @@
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, LocalDateTime, ZoneId}
+
 import org.apache.spark.{SparkConf, SparkContext}
 
 object ScalaExample {
@@ -7,9 +10,21 @@ object ScalaExample {
     val sc = new SparkContext(sparkConf)
 
     val textFile = sc.textFile(args(0))
-    val counts = textFile.flatMap(line => line.split(" "))
-      .map(word => (word, 1))
-      .reduceByKey(_ + _)
+    val counts = textFile.map(line => line.split(","))
+      .map {
+        case Array(timestamp, price, volume) =>
+          (formatTimestamp(timestamp.toLong), ((price.toDouble, price.toDouble), volume.toDouble))
+      }
+      .reduceByKey {
+        case (((minPrice1, maxPrice1), volume1), ((minPrice2, maxPrice2), volume2)) =>
+          ((Math.min(minPrice1, minPrice2), Math.max(maxPrice1, maxPrice2)), volume1 + volume2)
+      }
     counts.saveAsTextFile(args(1))
+  }
+
+  private def formatTimestamp(timestamp: Long): String = {
+    val instant = Instant.ofEpochSecond(timestamp)
+    LocalDateTime.ofInstant(instant, ZoneId.systemDefault)
+      .format(DateTimeFormatter.ofPattern("MMM uuuu"))
   }
 }
