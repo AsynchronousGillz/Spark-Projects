@@ -3,7 +3,7 @@ import java.time.{Instant, LocalDateTime, ZoneId}
 
 import org.apache.spark.{SparkConf, SparkContext}
 
-object PricePerDay {
+object AveragePricePerDay {
 
   def main(args: Array[String]) {
     val sparkConf = new SparkConf().setAppName(Aggregator.getClass.getSimpleName)
@@ -13,17 +13,16 @@ object PricePerDay {
     val result = textFile.map(line => line.split(","))
       .map {
         case Array(timestamp, price, _) =>
-          (formatTimestamp(timestamp.toLong), List((timestamp.toLong, price.toDouble)))
+          (formatTimestamp(timestamp.toLong), List(price.toDouble))
       }
       .reduceByKey(_ ::: _)
       .map {
         case (timestamp, prices) =>
-          val sortedByTimestamp = prices.sorted
-          val rateOfChange = sortedByTimestamp.last._2 + sortedByTimestamp.head._2./(2)
-          (timestamp, rateOfChange)
+          val averagePricePerDay = prices.sum / prices.length
+          (timestamp, averagePricePerDay)
       }
       .cache()
-      .sortByKey(true)
+      .sortByKey(ascending = true)
     result.saveAsTextFile(args(1))
   }
 
