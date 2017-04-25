@@ -9,12 +9,13 @@ object Aggregator {
     val sparkConf = new SparkConf().setAppName(Aggregator.getClass.getSimpleName)
     val sc = new SparkContext(sparkConf)
 
-    val textFile = sc.textFile(args(0))
+    val textFile = sc.textFile(args(0), 24)
     val result = textFile.map(line => line.split(","))
       .map {
         case Array(timestamp, price, volume) =>
           (formatTimestamp(timestamp.toLong), ((price.toDouble, price.toDouble), volume.toDouble))
       }
+      .cache()
       .reduceByKey {
         case (((minPrice1, maxPrice1), volume1), ((minPrice2, maxPrice2), volume2)) =>
           ((Math.min(minPrice1, minPrice2), Math.max(maxPrice1, maxPrice2)), volume1 + volume2)
