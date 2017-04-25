@@ -3,7 +3,7 @@ import java.time.{Instant, LocalDateTime, ZoneId}
 
 import org.apache.spark.{SparkConf, SparkContext}
 
-object RateOfChange {
+object PricePerDay {
 
   def main(args: Array[String]) {
     val sparkConf = new SparkConf().setAppName(Aggregator.getClass.getSimpleName)
@@ -19,7 +19,7 @@ object RateOfChange {
       .map {
         case (timestamp, prices) =>
           val sortedByTimestamp = prices.sorted
-          val rateOfChange = sortedByTimestamp.last._2 - sortedByTimestamp.head._2
+          val rateOfChange = sortedByTimestamp.last._2 + sortedByTimestamp.head._2./(2)
           (timestamp, rateOfChange)
       }
       .cache()
@@ -30,7 +30,7 @@ object RateOfChange {
   private def formatTimestamp(timestamp: Long): String = {
     val instant = Instant.ofEpochSecond(timestamp)
     LocalDateTime.ofInstant(instant, ZoneId.systemDefault)
-      .format(DateTimeFormatter.ofPattern("yyyy/MM"))
+      .format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
     // EEE - DAY OF WEEK (Wed)
   }
 }
