@@ -10,7 +10,7 @@ object MLChange {
     val result = textFile.map(line => line.split(","))
       .map {
         case Array(timestamp, price, volume) =>
-          timestamp.toLong + " 1:" + price.toDouble + " 2:" + volume.toDouble
+          price.toDouble + " 1:" + timestamp.toLong + " 2:" + volume.toDouble
       }
       .cache()
     result.saveAsTextFile(args(1))
