@@ -9,7 +9,7 @@ object RateOfChange {
     val sparkConf = new SparkConf().setAppName(Aggregator.getClass.getSimpleName)
     val sc = new SparkContext(sparkConf)
 
-    val textFile = sc.textFile(args(0))
+    val textFile = sc.textFile(args(0), 24)
     val result = textFile.map(line => line.split(","))
       .map {
         case Array(timestamp, price, _) =>
@@ -22,12 +22,15 @@ object RateOfChange {
           val rateOfChange = sortedByTimestamp.last._2 - sortedByTimestamp.head._2
           (timestamp, rateOfChange)
       }
+      .cache()
+      .sortByKey(true)
     result.saveAsTextFile(args(1))
   }
 
   private def formatTimestamp(timestamp: Long): String = {
     val instant = Instant.ofEpochSecond(timestamp)
     LocalDateTime.ofInstant(instant, ZoneId.systemDefault)
-      .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+      .format(DateTimeFormatter.ofPattern("yyyy/MM"))
+    // EEE - DAY OF WEEK (Wed)
   }
 }
