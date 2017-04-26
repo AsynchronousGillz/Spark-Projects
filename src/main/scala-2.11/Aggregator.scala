@@ -20,12 +20,13 @@ object Aggregator {
         case (((minPrice1, maxPrice1), volume1), ((minPrice2, maxPrice2), volume2)) =>
           ((Math.min(minPrice1, minPrice2), Math.max(maxPrice1, maxPrice2)), volume1 + volume2)
       }
+      .sortByKey(ascending = true)
     result.saveAsTextFile(args(1))
   }
 
   private def formatTimestamp(timestamp: Long): String = {
     val instant = Instant.ofEpochSecond(timestamp)
     LocalDateTime.ofInstant(instant, ZoneId.systemDefault)
-      .format(DateTimeFormatter.ofPattern("MMM uuuu"))
+      .format(DateTimeFormatter.ofPattern("yyyy/MM"))
   }
 }

@@ -6,7 +6,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 object DollarVolume {
 
   def main(args: Array[String]) {
-    val sparkConf = new SparkConf().setAppName(Aggregator.getClass.getSimpleName)
+    val sparkConf = new SparkConf().setAppName(DollarVolume.getClass.getSimpleName)
     val sc = new SparkContext(sparkConf)
 
     val textFile = sc.textFile(args(0), 24)
